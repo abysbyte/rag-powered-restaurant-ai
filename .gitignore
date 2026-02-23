@@ -1,0 +1,10 @@
+# Database
+users.db
+chrome_langchain_db/
+
+# Virtual Environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
