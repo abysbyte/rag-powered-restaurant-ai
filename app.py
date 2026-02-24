@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 # Security Constants
-SECRET_KEY = "SUPER_SECRET_PIZZA_KEY"  # In production, use environment variables
+SECRET_KEY = "SUPER_SECRET_PIZZA_KEY"  
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # 1 day
 
@@ -25,7 +25,7 @@ app = FastAPI()
 # Enable CORS for frontend development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust this in production
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
