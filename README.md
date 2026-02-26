@@ -15,7 +15,7 @@ Welcome to **PIZZA(AI)LAB**, a modern, interactive web application that leverage
 ## 🎥 Demo Experience
 
 <div align="center">
-  <video src="./frontend/public/video/Recording 2026-02-23 230323.mp4" width="100%" controls="controls"></video>
+  <video src="https://raw.githubusercontent.com/abysbyte/PIZZA-AI-LAB---RAG-with-Ollama---LangChain/main/frontend/public/video/demo.mp4" width="100%" controls="controls"></video>
 </div>
 
 ---
