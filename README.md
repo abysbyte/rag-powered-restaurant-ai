@@ -12,6 +12,14 @@ Welcome to **PIZZA(AI)LAB**, a modern, interactive web application that leverage
 
 ---
 
+## 🎥 Demo Experience
+
+<div align="center">
+  <video src="./frontend/public/video/Recording%202026-02-23%20230323.mp4" width="100%" controls="controls"></video>
+</div>
+
+---
+
 ## ✨ Features
 
 <details>
