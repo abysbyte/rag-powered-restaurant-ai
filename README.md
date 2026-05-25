@@ -1,4 +1,4 @@
-# 🍕 PIZZA(AI)LAB - RAG with Ollama & LangChain
+# 🍕 rag-powered-restaurant-ai
 
 <div align="center">
   <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi" />
