@@ -12,11 +12,19 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Optional
+from google.oauth2 import id_token
+from google.auth.transport import requests
+import secrets
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 # Security Constants
-SECRET_KEY = "SUPER_SECRET_PIZZA_KEY"  
+SECRET_KEY = "SUPER_SECRET_PIZZA_KEY"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # 1 day
+GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID" # Replace with actual Client ID
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -25,7 +33,7 @@ app = FastAPI()
 # Enable CORS for frontend development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -55,6 +63,9 @@ class UserLogin(BaseModel):
 class Query(BaseModel):
     question: str
 
+class GoogleAuth(BaseModel):
+    id_token_jwt: str
+
 # Initialize models and chains
 model = OllamaLLM(model="llama3.2:1b")
 template = """
@@ -76,7 +87,7 @@ async def signup(user: UserCreate, db: Session = Depends(get_db)):
         if db_user:
             raise HTTPException(status_code=400, detail="Username already registered")
         
-        # Bcrypt has a 72-byte limit. 
+        # Bcrypt has a 72-byte limit.
         safe_password = user.password[:72]
         hashed_pwd = pwd_context.hash(safe_password)
         
@@ -105,6 +116,49 @@ async def login(user: UserLogin, db: Session = Depends(get_db)):
         return {"access_token": access_token, "token_type": "bearer", "username": db_user.username}
     except Exception as e:
         logging.error(f"Login error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+
+@app.post("/auth/google")
+async def google_auth(auth_data: GoogleAuth, db: Session = Depends(get_db)):
+    try:
+        try:
+            idinfo = id_token.verify_oauth2_token(
+                auth_data.id_token_jwt, requests.Request(), GOOGLE_CLIENT_ID
+            )
+        except ValueError:
+            raise HTTPException(status_code=401, detail="Invalid Google token. Ensure GOOGLE_CLIENT_ID is correct.")
+        
+        email = idinfo.get("email")
+        if not email:
+            raise HTTPException(status_code=400, detail="Google token missing email")
+
+        username = email.split('@')[0]
+        db_user = db.query(User).filter((User.email == email) | (User.username == username)).first()
+        
+        if not db_user:
+            # Create user if doesn't exist
+            random_password = secrets.token_urlsafe(16)
+            hashed_pwd = pwd_context.hash(random_password[:72])
+            
+            base_username = username
+            counter = 1
+            while db.query(User).filter(User.username == username).first():
+                username = f"{base_username}{counter}"
+                counter += 1
+
+            new_user = User(username=username, email=email, hashed_password=hashed_pwd)
+            db.add(new_user)
+            db.commit()
+            db.refresh(new_user)
+            db_user = new_user
+
+        access_token = create_access_token(data={"sub": db_user.username})
+        return {"access_token": access_token, "token_type": "bearer", "username": db_user.username}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Google Auth error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
 @app.post("/query")

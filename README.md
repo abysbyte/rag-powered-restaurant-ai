@@ -1,4 +1,4 @@
-# 🍕 PIZZA(AI)LAB - RAG with Ollama & LangChain
+# 🍕Resturant Analysis - RAG with Ollama & LangChain
 
 <div align="center">
   <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi" />
@@ -53,7 +53,151 @@ Welcome to **PIZZA(AI)LAB**, a modern, interactive web application that leverage
 
 ---
 
-## 🚀 Quick Start Guide
+## � Workflow Architecture
+
+### System Overview
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     PIZZA(AI)LAB Workflow                       │
+└─────────────────────────────────────────────────────────────────┘
+
+                    ┌──────────────────┐
+                    │  React Frontend  │
+                    │  (Vite + React)  │
+                    └────────┬─────────┘
+                             │
+                             ↓
+                    ┌──────────────────┐
+                    │   FastAPI REST   │
+                    │   API Endpoints  │
+                    └────────┬─────────┘
+                             │
+                ┌────────────┼────────────┐
+                │            │            │
+                ↓            ↓            ↓
+            ┌────────┐ ┌──────────┐ ┌──────────┐
+            │  Auth  │ │   RAG    │ │ Database │
+            │  Flow  │ │ Pipeline │ │ (SQLite) │
+            └────────┘ └──────────┘ └──────────┘
+```
+
+### Detailed Workflow Stages
+
+#### 1️⃣ **User Authentication Flow**
+```
+User Input (Signup/Login)
+    ↓
+Frontend Form Submission
+    ↓
+FastAPI Endpoint (/auth/signup or /auth/login)
+    ↓
+Password Hashing (bcrypt)
+    ↓
+SQLite Database Validation
+    ↓
+JWT Token Generation (24-hour expiry)
+    ↓
+Token Returned to Frontend
+    ↓
+Token Stored in Local Storage
+```
+
+#### 2️⃣ **Query Processing & RAG Pipeline**
+```
+User Question Input
+    ↓
+Frontend sends Query → FastAPI Endpoint (/query)
+    ↓
+JWT Token Verification
+    ↓
+Question Pre-processing
+    ↓
+Vector Embedding Generation (Ollama: mxbai-embed-large)
+    ↓
+Semantic Search in Chroma Vector Store
+    ↓
+Retrieve Top 3 Relevant Restaurant Reviews (k=3)
+    ↓
+LangChain Prompt Template Creation
+    ↓
+Ollama LLM Processing (llama3.2:1b)
+    ↓
+Context-Aware Response Generation
+    ↓
+Response Formatting & JSON Return
+    ↓
+Frontend Display in Chat Panel
+```
+
+#### 3️⃣ **Data Flow Breakdown**
+
+| Stage | Component | Purpose |
+|-------|-----------|---------|
+| **Input** | React Frontend | User enters question/text |
+| **Transmission** | HTTP/REST API | Secure data transfer with JWT |
+| **Validation** | FastAPI Middleware | Token verification & CORS handling |
+| **Vector Processing** | Ollama Embeddings | Convert text → semantic vectors |
+| **Retrieval** | Chroma Vector DB | Search & retrieve relevant reviews |
+| **LLM Processing** | Ollama LLM (llama3.2:1b) | Generate intelligent responses |
+| **Output** | FastAPI Response | JSON formatted result |
+| **Display** | React Components | Render response in UI |
+
+#### 4️⃣ **Data Sources & Storage**
+
+```
+realistic_restaurant_reviews.csv
+    ↓
+Vector Embedding (First Run Only)
+    ↓
+Stored in: chrome_langchain_db/ (Chroma Collection)
+    ↓
+Persistent Across Sessions
+    ↓
+Retrieved on Every Query
+```
+
+#### 5️⃣ **Complete Request-Response Cycle**
+
+```
+┌─ FRONTEND ────────────────────────────────────────────┐
+│                                                        │
+│  1. User enters question                              │
+│  2. JWT token added to request headers                │
+│  3. HTTP POST to /api/query endpoint                  │
+│                                                        │
+└────────────────────────┬────────────────────────────┘
+                         │
+                    (HTTP Request)
+                         │
+                         ↓
+┌─ BACKEND (FastAPI) ───────────────────────────────────┐
+│                                                        │
+│  1. Verify JWT token                                  │
+│  2. Extract question from request body                │
+│  3. Generate embeddings (Ollama)                      │
+│  4. Query Chroma vector store (k=3)                   │
+│  5. Format context with reviews                       │
+│  6. Call Ollama LLM with prompt + context             │
+│  7. Collect AI-generated response                     │
+│                                                        │
+└────────────────────────┬────────────────────────────┘
+                         │
+                    (HTTP Response)
+                         │
+                         ↓
+┌─ FRONTEND ────────────────────────────────────────────┐
+│                                                        │
+│  1. Receive JSON response                             │
+│  2. Parse AI answer                                   │
+│  3. Update chat UI with message                       │
+│  4. Display in chat panel                             │
+│                                                        │
+└────────────────────────────────────────────────────────┘
+```
+
+---
+
+## �🚀 Quick Start Guide
 
 Follow these steps to get the application running locally!
 
